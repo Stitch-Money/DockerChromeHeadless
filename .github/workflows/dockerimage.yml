@@ -8,15 +8,15 @@ on:
 jobs:
   build:
     env:
-      imageTag: $(date +%s)
+      imageTag: "$(date +%s)"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag stitchmoney/chrome-headless-for-puppeteer:$imageTag
+      run: docker build . --file Dockerfile --tag stitchmoney/chrome-headless-for-puppeteer:$(imageTag)
     - name: Login to container registry
       run: docker login --username=${{ secrets.DOCKERHUB_USERNAME }} --password=${{ secrets.DOCKERHUB_TOKEN }}
     - name: Push Image
-      run: docker push stitchmoney/chrome-headless-for-puppeteer:$imageTag
+      run: docker push stitchmoney/chrome-headless-for-puppeteer:$(imageTag)
 
 
