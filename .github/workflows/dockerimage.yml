@@ -11,11 +11,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag stitchmoney/chrome-headless-for-puppeteer:$GITHUB_SHA
+      run: docker build . --file Dockerfile --tag stitchmoney/chrome-headless-for-puppeteer:$GITHUB_SHA --tag stitchmoney/chrome-headless-for-puppeteer:latest
     - name: Login to container registry
       run: docker login --username=${{ secrets.DOCKERHUB_USERNAME }} --password=${{ secrets.DOCKERHUB_TOKEN }}
     - name: Push Image
       run: docker push stitchmoney/chrome-headless-for-puppeteer:$GITHUB_SHA
-
-
 
