@@ -15,6 +15,6 @@ jobs:
     - name: Login to container registry
       run: docker login --username=${{ secrets.DOCKERHUB_USERNAME }} --password=${{ secrets.DOCKERHUB_TOKEN }}
     - name: Push Image
-      run: docker push stitchmoney/chrome-headless-for-puppeteer:$GITHUB_SHA && stitchmoney/chrome-headless-for-puppeteer:latest
+      run: docker push stitchmoney/chrome-headless-for-puppeteer:$GITHUB_SHA && docker push stitchmoney/chrome-headless-for-puppeteer:latest
  
 
