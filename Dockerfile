@@ -75,9 +75,6 @@ RUN cd /tmp &&\
     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb &&\
     dpkg -i google-chrome-stable_current_amd64.deb;
 
-ADD https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 /usr/local/bin/dumb-init
-RUN chmod +x /usr/local/bin/dumb-init
-
 RUN groupadd -r chromeuser && useradd -r -g chromeuser -G audio,video chromeuser \
     && mkdir -p /home/chromeuser/Downloads \
     && chown -R chromeuser:chromeuser /home/chromeuser
@@ -88,5 +85,5 @@ USER chromeuser
 WORKDIR /home/chromeuser/
 
 
-ENTRYPOINT ["dumb-init", "--"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["google-chrome", "--headless", "--disable-gpu", "--no-sandbox", "--remote-debugging-port=9222"]
