@@ -1,41 +1,92 @@
-FROM alpine:latest
+FROM ubuntu:18.04
 
-ARG BUILD_DATE
-ARG VCS_REF
+# Dependencies
+RUN apt-get -qq update && \
+    echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections && \
+    apt-get -y -qq install software-properties-common &&\
+    apt-add-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" && \
+    apt-add-repository ppa:malteworld/ppa && apt-get -qq update && apt-get -y -qq install \
+    dumb-init \
+    adobe-flashplugin \
+    msttcorefonts \
+    ffmpeg \
+    fonts-noto-color-emoji \
+    fonts-noto-cjk \
+    fonts-liberation \
+    fonts-thai-tlwg \
+    fonts-indic \
+    fontconfig \
+    libappindicator3-1 \
+    pdftk \
+    unzip \
+    locales \
+    gconf-service \
+    libasound2 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgcc1 \
+    libgconf-2-4 \
+    libgdk-pixbuf2.0-0 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    ca-certificates \
+    libappindicator1 \
+    libnss3 \
+    lsb-release \
+    xdg-utils \
+    wget \
+    xvfb \
+    curl &&\
+    apt-get -y -qq install build-essential &&\
+    fc-cache -f -v
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.description="Chrome running in headless mode in a tiny Alpine image" \
-    org.label-schema.name="alpine-chrome" \
-    org.label-schema.schema-version="1.0.0-rc1" \
-    org.label-schema.usage="https://github.com/Zenika/alpine-chrome/blob/master/README.md" \
-    org.label-schema.vcs-url="https://github.com/Zenika/alpine-chrome" \
-    org.label-schema.vcs-ref=$VCS_REF \
-    org.label-schema.vendor="Zenika" \
-    org.label-schema.version="latest"
+ENV CONNECTION_TIMEOUT=60000
+ENV CHROME_PATH=/usr/bin/google-chrome
+ENV ENABLE_XVBF=true
+ENV HOST=0.0.0.0
+ENV IS_DOCKER=true
 
-# Installs latest Chromium package.
-RUN echo @edge http://nl.alpinelinux.org/alpine/edge/community > /etc/apk/repositories \
-    && echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories \
-    && apk add --no-cache \
-    libstdc++@edge \
-    chromium@edge \
-    harfbuzz@edge \
-    nss@edge \
-    freetype@edge \
-    ttf-freefont@edge \
-    && rm -rf /var/cache/* \
-    && mkdir /var/cache/apk
 
-# Add Chrome as a user
-RUN mkdir -p /usr/src/app \
-    && adduser -D chrome \
-    && chown -R chrome:chrome /usr/src/app
-# Run Chrome as non-privileged
-USER chrome
-WORKDIR /usr/src/app
 
-ENV CHROME_BIN=/usr/bin/chromium-browser \
-    CHROME_PATH=/usr/lib/chromium/
+# Install Chrome Stable when specified
+RUN cd /tmp &&\
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb &&\
+    dpkg -i google-chrome-stable_current_amd64.deb;
 
-# Autorun chrome headless with no GPU
-ENTRYPOINT ["chromium-browser", "--headless", "--disable-gpu", "--disable-software-rasterizer", "--disable-dev-shm-usage"]
+ADD https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 /usr/local/bin/dumb-init
+RUN chmod +x /usr/local/bin/dumb-init
+
+RUN groupadd -r chromeuser && useradd -r -g chromeuser -G audio,video chromeuser \
+    && mkdir -p /home/chromeuser/Downloads \
+    && chown -R chromeuser:chromeuser /home/chromeuser
+
+RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+USER chromeuser
+WORKDIR /home/chromeuser/
+ADD 'chrome.json' .
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["google-chrome", "--headless", "--disable-gpu", "--no-sandbox", "--remote-debugging-port=9222"]
