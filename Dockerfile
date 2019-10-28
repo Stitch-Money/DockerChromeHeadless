@@ -86,7 +86,7 @@ RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 USER chromeuser
 WORKDIR /home/chromeuser/
-ADD 'chrome.json' .
+
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["google-chrome", "--headless", "--disable-gpu", "--no-sandbox", "--remote-debugging-port=9222"]
