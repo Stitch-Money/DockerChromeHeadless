@@ -3,6 +3,7 @@ FROM ubuntu:18.04
 # Dependencies
 RUN apt-get -qq update && \
     echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections && \
+    apt-get -y -qq install build-essential &&\
     apt-get -y -qq install software-properties-common &&\
     apt-add-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" && \
     apt-add-repository ppa:malteworld/ppa && apt-get -qq update && apt-get -y -qq install \
@@ -59,7 +60,6 @@ RUN apt-get -qq update && \
     wget \
     xvfb \
     curl &&\
-    apt-get -y -qq install build-essential &&\
     fc-cache -f -v
 
 ENV CONNECTION_TIMEOUT=60000
@@ -86,4 +86,4 @@ WORKDIR /home/chromeuser/
 
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["google-chrome", "--headless", "--disable-gpu", "--no-sandbox", "--remote-debugging-port=9222"]
+CMD ["google-chrome", "--headless", "--disable-gpu", "--remote-debugging-port=9222", "--disable-translate", "--disable-extensions", "--no-first-run", "--safebrowsing-disable-auto-update"]
